@@ -45,13 +45,18 @@ do
     IFS=','
     read -r -a game <<< $row
 
+    year=${game[0]}
+    round=${game[1]}
     winner=${game[2]}
+    opp=${game[3]}
+    goals_w=${game[4]}
+    goals_o=${game[5]}
 
-    echo "    Year: ${game[0]}"
-    echo "    Round: ${game[1]}"
+    echo "    Year: $year"
+    echo "    Round: $round"
     echo "    Winner: $winner"
-    echo "    Opponent: ${game[3]}"
-    echo "    Score: ${game[4]}:${game[5]}"    
+    echo "    Opponent: $opp"
+    echo "    Score: $goals_w:$goals_o"    
   fi
 done
 
