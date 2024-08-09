@@ -8,27 +8,17 @@ else
 fi
 
 # Do not change code above this line. Use the PSQL variable above to query your database.
+echo "----- Clear Existing Data -----"
+echo $($PSQL "TRUNCATE games, teams")
 
-GetTeamId() {
+TEAM_NAME="France"
+query="INSERT INTO teams(name) VALUES('${TEAM_NAME}')"
+insert_command_france=$($PSQL "${query}")
+echo $insert_command_france
+echo $PSQL "INSERT INTO teams(name) VALUES('${TEAM_NAME}')"
+#echo $($PSQL $query)
 
-  TEAM_NAME=$1
-  TEAM_ID="$($PSQL "SELECT team_id FROM teams WHERE name='$TEAM_NAME'")"
-
-
-  if [[ -z $TEAM_ID ]] # if team_id is empty, team doesn't exist.
-  then 
-    # insert a new team
-    insert_team_query="INSERT INTO teams(name) VALUES('$TEAM_NAME')"
-    insert_team_result="$($PSQL "$insert_team_query")"
-
-    if [[ $insert_team_result = "INSERT 0 1" ]]
-    then
-      # new team inserted
-      TEAM_ID="$($PSQL "$get_team_query")"
-    fi
-  fi
-  # return $1;
-}
+exit
 
 skip_headers=1
 IFS=$'\n'
@@ -57,9 +47,26 @@ do
     echo "    Winner: $winner"
     echo "    Opponent: $opp"
     echo "    Score: $goals_w:$goals_o"    
+
+    query="INSERT INTO teams(name) VALUES('${winner}')"
+    insert_command_result=$($PSQL "${query}")
+    
+    
+    # echo $($PSQL "SELECT team_id FROM teams")psql --username=freecodecamp --dbname=worldcup -t --no-align -c "SELECT team_id FROM teams"
+    # echo $TEAM_ID
+    # psql --username=freecodecamp --dbname=worldcup -t --no-align -c "SELECT team_id FROM teams"
+    # echo "${PSQL}"
+    # echo $PSQL "SELECT team_id FROM teams"
+    # echo $($PSQL "SELECT team_id FROM teams where name='France'")
+    # winner_id=$($PSQL SELECT team_id FROM teams)
+    # echo $winner_id
+    
+    
+    exit
   fi
 done
 
+# IFS=$'\n'
 # skip_headers=1
 # while IFS="," read -r YEAR ROUND WINNER OPPONENT WINNER_GOALS OPPONENT_GOALS
 # do
@@ -67,10 +74,10 @@ done
 #     then
 #         ((skip_headers--))
 #     else
-#         GetTeamId $WINNER
+#         GetOrCreateTeamIdFromTeamName $WINNER
 #         WINNER_ID=$TEAM_ID
 
-#         GetTeamId $OPPONENT
+#         GetOrCreateTeamIdFromTeamName $OPPONENT
 #         OPP_ID=$TEAM_ID
 #         echo "I got:$YEAR|$ROUND|$WINNER|$OPPONENT"
 #     fi
