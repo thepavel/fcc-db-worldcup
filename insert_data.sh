@@ -9,21 +9,23 @@ fi
 
 # Do not change code above this line. Use the PSQL variable above to query your database.
 echo "----- Clear Existing Data -----"
+truncate_command="$PSQL \"TRUNCATE games, teams\""
+truncate_result=$($PSQL "TRUNCATE games, teams")
 echo $($PSQL "TRUNCATE games, teams")
 
 TEAM_NAME="France"
 query="INSERT INTO teams(name) VALUES('${TEAM_NAME}')"
 insert_command_france=$($PSQL "${query}")
 echo $insert_command_france
-echo $PSQL "INSERT INTO teams(name) VALUES('${TEAM_NAME}')"
-#echo $($PSQL $query)
 
-exit
+query="SELECT team_id FROM teams WHERE name = '${TEAM_NAME}'"
+echo $($PSQL "${query}")
 
 skip_headers=1
 IFS=$'\n'
 for row in $(cat games.csv)
 do
+
   if ((skip_headers))
   then
     ((skip_headers--))
@@ -42,27 +44,60 @@ do
     goals_w=${game[4]}
     goals_o=${game[5]}
 
-    echo "    Year: $year"
-    echo "    Round: $round"
-    echo "    Winner: $winner"
+    echo "        Year: $year"
+    echo "       Round: $round"
+    echo "      Winner: $winner"
     echo "    Opponent: $opp"
-    echo "    Score: $goals_w:$goals_o"    
+    echo "       Score: $goals_w:$goals_o"    
+  
+    winner_id=$(psql --username=freecodecamp --dbname=worldcup -t --no-align -c "SELECT team_id FROM teams WHERE name = '$winner'")
+    winner_id=$(psql --username=freecodecamp --dbname=worldcup -t --no-align -c "SELECT team_id FROM teams WHERE name = '${winner}'")
+    query="SELECT team_id FROM teams WHERE name = '${winner}'"
+    echo $query
+    # insert_query_test=$($PSQL "${query}")
+    # echo $insert_query_test
 
-    query="INSERT INTO teams(name) VALUES('${winner}')"
-    insert_command_result=$($PSQL "${query}")
+    opp_id=$(psql --username=freecodecamp --dbname=worldcup -t --no-align -c "SELECT team_id FROM teams WHERE name = '$opp'")
+
+    if [[ -z $winner_id ]]
+    then
+      echo $winner is a new team
+      
+      insert_team_result=$(psql --username=freecodecamp --dbname=worldcup -t --no-align -c " INSERT INTO teams(name) VALUES('$winner')")
+      if [[ $insert_team_result = "INSERT 0 1" ]]
+      then
+        echo inserted new team
+
+        winner_id=$(psql --username=freecodecamp --dbname=worldcup -t --no-align -c "SELECT team_id FROM teams WHERE name = '$winner'")
+        echo $winner has id:$winner_id
+      else 
+        echo error inserting new team
+        echo $insert_team_result  
+      fi
+    else
+      echo $winner has id:$winner_id
+    fi
     
+    # add opponent team if it doesn't exist
+    if [[ -z $opp_id ]]
+    then
+      echo $opp is a new team
+
+      opp_insert_result=$(psql --username=freecodecamp --dbname=worldcup -t --no-align -c " INSERT INTO teams(name) VALUES('$opp')")
+      if [[ $opp_insert_result = "INSERT 0 1" ]]
+      then
+        echo inserted new team
+
+        opp_id=$(psql --username=freecodecamp --dbname=worldcup -t --no-align -c "SELECT team_id FROM teams WHERE name = '$opp'")
+        echo $opp has id: $opp_id
+      else 
+        echo error inserting new team
+        echo $opp_insert_result  
+      fi
+    else
+        echo $opp has id: $opp_id
+    fi
     
-    # echo $($PSQL "SELECT team_id FROM teams")psql --username=freecodecamp --dbname=worldcup -t --no-align -c "SELECT team_id FROM teams"
-    # echo $TEAM_ID
-    # psql --username=freecodecamp --dbname=worldcup -t --no-align -c "SELECT team_id FROM teams"
-    # echo "${PSQL}"
-    # echo $PSQL "SELECT team_id FROM teams"
-    # echo $($PSQL "SELECT team_id FROM teams where name='France'")
-    # winner_id=$($PSQL SELECT team_id FROM teams)
-    # echo $winner_id
-    
-    
-    exit
   fi
 done
 
