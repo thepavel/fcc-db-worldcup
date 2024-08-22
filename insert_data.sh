@@ -22,11 +22,10 @@ do
   then
     ((skip_headers--))
   else
-    echo $YEAR $ROUND : $WINNER $W_GOALS - $O_GOALS $OPP
+    echo $YEAR $ROUND: $WINNER $W_GOALS - $O_GOALS $OPP
     winner_id=$($PSQL "SELECT team_id FROM teams WHERE name = '${WINNER}'")
     opp_id=$($PSQL "SELECT team_id FROM teams WHERE name = '${OPP}'")
-    
-    echo winner_id: $winner_id
+
     # create winner if they don't exist
     if [[ -z $winner_id ]]
     then
@@ -44,7 +43,7 @@ do
       insert_result=$($PSQL "INSERT INTO teams(name) VALUES('${OPP}')")
       if [[ $insert_result = 'INSERT 0 1' ]]
       then 
-        winner_id=$($PSQL "SELECT team_id FROM teams WHERE name = '${OPP}'")
+        opp_id=$($PSQL "SELECT team_id FROM teams WHERE name = '${OPP}'")
         echo inserted team: $OPP
       fi
     fi
