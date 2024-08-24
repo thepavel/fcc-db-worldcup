@@ -8,34 +8,34 @@ echo -e "\nTotal number of goals in all games from winning teams:"
 echo "$($PSQL "SELECT SUM(winner_goals) FROM games")"
 
 echo -e "\nTotal number of goals in all games from both teams combined:"
-echo
+echo "$($PSQL "SELECT SUM(winner_goals+opponent_goals) FROM games")"
 
 echo -e "\nAverage number of goals in all games from the winning teams:"
-echo
+echo "$($PSQL "SELECT AVG(winner_goals) FROM games")"
 
 echo -e "\nAverage number of goals in all games from the winning teams rounded to two decimal places:"
-echo
+echo "$($PSQL "SELECT AVG(winner_goals)::NUMERIC(10,2) FROM games")"
 
 echo -e "\nAverage number of goals in all games from both teams:"
-echo
+echo "$($PSQL "SELECT AVG(winner_goals+opponent_goals) FROM games")"
 
 echo -e "\nMost goals scored in a single game by one team:"
-echo
+echo "$($PSQL "SELECT MAX(winner_goals) FROM games")"
 
 echo -e "\nNumber of games where the winning team scored more than two goals:"
-echo
+echo "$($PSQL "SELECT COUNT(*) FROM games WHERE winner_goals>2")"
 
 echo -e "\nWinner of the 2018 tournament team name:"
-echo
+echo "$($PSQL "SELECT teams.name FROM games INNER JOIN teams ON games.winner_id = teams.team_id WHERE year = 2018 AND round = 'Final'")"
 
 echo -e "\nList of teams who played in the 2014 'Eighth-Final' round:"
-echo
+echo "$($PSQL "SELECT t.name FROM teams t LEFT JOIN games gw ON t.team_id = gw.winner_id WHERE gw.year = 2014 AND gw.round = 'Eighth-Final' UNION SELECT t.name FROM teams t LEFT JOIN games go ON t.team_id = go.opponent_id WHERE go.year = 2014 AND go.round = 'Eighth-Final'")"
 
 echo -e "\nList of unique winning team names in the whole data set:"
-echo
+echo "$($PSQL "SELECT DISTINCT name FROM games LEFT JOIN teams on games.winner_id = teams.team_id order by name")"
 
-echo -e "\nYear and team name of all the champions:"
-echo
+echo -e "\nYear and team name of all the champions:" # champions are those that won finals. 
+echo "$($PSQL "SELECT g.year, t.name FROM games g LEFT JOIN teams t ON g.winner_id = t.team_id WHERE g.round = 'Final' order by g.year")"
 
 echo -e "\nList of teams that start with 'Co':"
-echo
+echo "$($PSQL "SELECT name FROM teams WHERE name LIKE 'Co%'")"
